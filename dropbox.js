@@ -45,34 +45,30 @@ angular.module('dropbox', [])
 
         var urls = {
           // Authentication.
-          authorize:           authServer + '/1/oauth2/authorize',
-          token:               apiServer  + '/1/oauth2/token',
-          signOut:             apiServer  + '/1/unlink_access_token',
+          authorize:           authServer + 'oauth2/authorize',
+          token:               apiServer  + 'oauth2/token',
+          signOut:             apiServer  + '/oauth2/token/revoke',
 
           // Accounts.
-          accountInfo:         apiServer  + '/1/account/info',
+          accountInfo:         apiServer  + '/2/users/get_current_account',
 
           // Files and metadata.
-          getFile:             fileServer + '/1/files/auto/',
-          postFile:            fileServer + '/1/files/auto/',
-          putFile:             fileServer + '/1/files_put/auto/',
-          metadata:            apiServer  + '/1/metadata/auto/',
-          delta:               apiServer  + '/1/delta',
-          revisions:           apiServer  + '/1/revisions/auto/',
-          restore:             apiServer  + '/1/restore/auto/',
-          search:              apiServer  + '/1/search/auto/',
-          shares:              apiServer  + '/1/shares/auto',
-          media:               apiServer  + '/1/media/auto',
-          copyRef:             apiServer  + '/1/copy_ref/auto',
-          thumbnails:          fileServer + '/1/thumbnails/auto',
-          chunkedUpload:       fileServer + '/1/chunked_upload',
-          commitChunkedUpload: fileServer + '/1/commit_chunked_upload/auto',
+          
+          getFile:             fileServer + '/2/files/download/',
+          postFile:            fileServer + '/2/files/upload',
+          metadata:            apiServer  + '/2/files/get_metadata/',
+          delta:               apiServer  + '/2/files/list_folder',   //recursive = true
+          listFolder:          apiServer  + '/2/files/list_folder',   
+          revisions:           apiServer  + '/2/files/list_revisions',
+          restore:             apiServer  + '/2/files/restore/',
+          search:              apiServer  + '/2/files/search/',
+          shareFolder:         apiServer  + '/2/sharing/share_folder',          
 
           // File operations.
-          fileopsCopy:         apiServer  + '/1/fileops/copy',
-          fileopsCreateFolder: apiServer  + '/1/fileops/create_folder',
-          fileopsDelete:       apiServer  + '/1/fileops/delete',
-          fileopsMove:         apiServer  + '/1/fileops/move'
+          copy:                apiServer  + '/2/files/copy',
+          createFolder:        apiServer  + '/2/files/create_folder',
+          delete:              apiServer  + '/2/files/delete',
+          move:                apiServer  + '/2/files/move'
         };
 
 
@@ -288,7 +284,7 @@ angular.module('dropbox', [])
           writeFile: function (path, content, params) {
             return request({
               method: 'POST',
-              url: urls.putFile + path,
+              url: urls.postFile + path,
               data: content,
               headers: { 'Content-Type': undefined },
               transformRequest: angular.identity,
@@ -301,7 +297,11 @@ angular.module('dropbox', [])
             return GET(urls.metadata + path, params);
           },
 
-
+          listfolder: function (path, params) {
+            return GET(urls.listFolder + path, params);
+          },
+          
+          /*
           readdir: function (path, params) {
             var deferred = $q.defer();
 
@@ -319,7 +319,7 @@ angular.module('dropbox', [])
             this.stat(path, params).then(success, failure);
             return deferred.promise;
           },
-
+*/
 
           metadata: function (path, params) {
             return this.stat(path, params);
@@ -333,22 +333,12 @@ angular.module('dropbox', [])
             return GET(urls.revisions + path, params);
           },
 
-
           revisions: function (path, params) {
             return this.history(path, params);
           },
 
 
-          thumbnailUrl: function (path, params) {
-            return urls.thumbnails
-                 + path
-                 + '?format=jpeg&size=m&access_token='
-                 + oauth.access_token;
-          },
-
-
           // readThumbnail
-
 
           revertFile: function (path, rev) {
             return POST(urls.restore + path, null, { rev: rev });
@@ -386,7 +376,7 @@ angular.module('dropbox', [])
 
 
           mkdir: function (path) {
-            return POST(urls.fileopsCreateFolder, null, {
+            return POST(urls.createFolder, null, {
               root: 'auto',
               path: path
             });
@@ -394,7 +384,7 @@ angular.module('dropbox', [])
 
 
           remove: function (path) {
-            return POST(urls.fileopsDelete, null, {
+            return POST(urls.delete, null, {
               root: 'auto',
               path: path
             });
@@ -412,7 +402,7 @@ angular.module('dropbox', [])
 
 
           copy: function (from, to) {
-            return POST(urls.fileopsCopy, null, {
+            return POST(urls.copy, null, {
               root: 'auto',
               to_path: to,
               from_path: from
@@ -421,7 +411,7 @@ angular.module('dropbox', [])
 
 
           move: function (from, to) {
-            return POST(urls.fileopsMove, null, {
+            return POST(urls.move, null, {
               root: 'auto',
               to_path: to,
               from_path: from
