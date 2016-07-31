@@ -1,6 +1,6 @@
 {
-  "name": "ngDropbox",
-  "version": "0.0.0",
+  "name": "AngularDropboxAPI",
+  "version": "1.0.0",
   "main": "dropbox.js",
   "ignore": [
     "**/.*",

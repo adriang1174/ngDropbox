@@ -18,7 +18,7 @@ This module is in development. It's pending to implement the rest of the API. If
 
 If you don't use Bower, just download `dropbox.js` into your scripts directory.
 
-    $ curl -O https://raw.github.com/adriang1174/ngDropbox/dropbox.js
+    $ curl -O https://raw.github.com/adriang1174/ngDropbox/master/dropbox.js
 
     <script src="your/js/path/dropbox.js"></script>
 
