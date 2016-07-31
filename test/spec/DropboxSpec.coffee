@@ -10,8 +10,14 @@ describe 'Dropbox', ->
   headers =
     'Accept': 'application/json, text/plain, */*'
     'Authorization': 'Bearer XXT8_UkGb4cAAAAAAAADV2MQOd3QAgyo2dv2HX6euSVfmhmy0-AIJ97tXIs0NDcF'
-
-
+    'Content-Type': 'application/json;charset=utf-8'
+    
+   headers_read =
+            'Accept': 'application/json, text/plain, */*'
+            'Authorization': 'Bearer XXT8_UkGb4cAAAAAAAADV2MQOd3QAgyo2dv2HX6euSVfmhmy0-AIJ97tXIs0NDcF'
+            'Content-Type': 'application/json;charset=utf-8'
+            'Dropbox-API-Arg': '{"path":"/ayc.sql"}'
+            
   beforeEach module 'dropbox'
 
 
@@ -66,10 +72,11 @@ describe 'Dropbox', ->
   describe 'readFile', ->
 
     it 'should get the contents of a file', ->
-      url = "#{Dropbox.urls.getFile}directory/name.ext"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.readFile 'directory/name.ext'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.getFile}"
+       data = {}
+       $httpBackend.expectPOST(url, data, headers_read).respond null
+       Dropbox.readFile '/ayc.sql'
+       $httpBackend.flush()
 
 #    it 'should get the contents of a file as a blob', ->
 #      url = "#{Dropbox.urls.getFile}directory/name.ext?blob=true"
@@ -80,17 +87,23 @@ describe 'Dropbox', ->
   describe 'writeFile', ->
 
     it 'should write string data', ->
-      url = "#{Dropbox.urls.putFile}directory/file.txt"
+      url = "#{Dropbox.urls.postFile}"
       content = "contents of file"
-      $httpBackend.expectPOST(url, content, headers).respond null
-      Dropbox.writeFile 'directory/file.txt', content
+      params = {"mode":{".tag":"overwrite"}} 
+      headers_write =
+            'Accept': 'application/json, text/plain, */*'
+            'Authorization': 'Bearer XXT8_UkGb4cAAAAAAAADV2MQOd3QAgyo2dv2HX6euSVfmhmy0-AIJ97tXIs0NDcF'
+            'Content-Type': 'application/octet-stream'
+            'Dropbox-API-Arg': '{"path":"/file.txt","mode":{".tag":"overwrite"}}'
+      $httpBackend.expectPOST(url, content, headers_write).respond null
+      Dropbox.writeFile '/file.txt', content, params
       $httpBackend.flush()
 
-    it 'should write ArrayBuffer data'
-    it 'should write ArrayBuffer view data'
-    it 'should write Blob data'
-    it 'should write File data'
-    it 'should write Buffer data'
+#    it 'should write ArrayBuffer data'
+#    it 'should write ArrayBuffer view data'
+#    it 'should write Blob data'
+#    it 'should write File data'
+#    it 'should write Buffer data'
 
 
   describe 'resumableUploadStep', ->
@@ -102,10 +115,11 @@ describe 'Dropbox', ->
   describe 'stat', ->
 
     it 'should get the stat for a path', ->
-      url = "#{Dropbox.urls.metadata}/ayc.sql"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.stat '/ayc.sql'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.metadata}"
+       data = {"path":"/ayc.sql","include_media_info": false,"include_deleted": true} 
+       $httpBackend.expectPOST(url, data, headers).respond null
+       Dropbox.stat '/ayc.sql', {"include_media_info": false,"include_deleted": true}
+       $httpBackend.flush()
 
 
   describe 'readdir', ->
@@ -115,8 +129,9 @@ describe 'Dropbox', ->
   describe 'metadata', ->
 
     it 'should get the metadata for a path', ->
-      url = "#{Dropbox.urls.metadata}/ayc.sql"
-      $httpBackend.expectGET(url, headers).respond null
+      url = "#{Dropbox.urls.metadata}"
+      data = {path:"/ayc.sql"}
+      $httpBackend.expectPOST(url, data, headers).respond null
       Dropbox.metadata '/ayc.sql'
       $httpBackend.flush()
 
@@ -127,19 +142,32 @@ describe 'Dropbox', ->
   describe 'history', ->
 
     it 'should get the history for a path', ->
-      url = "#{Dropbox.urls.revisions}/ayc.sql"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.history '/ayc.sql'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.revisions}"
+       content = 'path':'/ayc.sql', 'limit':4
+       param = 'limit':4
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.history '/ayc.sql' , param
+       $httpBackend.flush()
 
 
   describe 'revisions', ->
 
     it 'should get the revisions for a path', ->
-      url = "#{Dropbox.urls.revisions}/ayc.sql"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.revisions '/ayc.sql'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.revisions}"
+       content = 'path':'/ayc.sql'
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.revisions '/ayc.sql'
+       $httpBackend.flush()
+
+  describe 'listFolder', ->
+
+    it 'should get the file list for a path', ->
+       url = "#{Dropbox.urls.listFolder}"
+       content = 'path':'/' ,  'recursive': false
+       param =  'recursive': false
+       $httpBackend.expectPOST(url, content, headers).respond null
+       Dropbox.listFolder '/' ,  'recursive': false
+       $httpBackend.flush()
 
 
 #  describe 'thumbnailUrl', ->
@@ -152,60 +180,44 @@ describe 'Dropbox', ->
   describe 'readThumbnail', ->
 
 
-  describe 'revertFile', ->
-
-
-#    it 'should restore a previous version', ->
-#      url = "#{Dropbox.urls.restore}file1.txt?rev=1234"
-#      $httpBackend.expectPOST(url, undefined).respond null
-#      Dropbox.revertFile 'file1.txt', '1234'
-#      $httpBackend.flush()
-
-
-#  describe 'restore', ->
-
-#    it 'should restore a previous version', ->
-#      url = "#{Dropbox.urls.restore}file1.txt?rev=1234"
-#      $httpBackend.expectPOST(url, undefined).respond null
-#      Dropbox.restore 'file1.txt', '1234'
-#      $httpBackend.flush()
-
-
-  describe 'findByName', ->
-
-    it 'should get query a path', ->
-      url = "#{Dropbox.urls.search}directory/name.ext?query=terms"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.findByName 'directory/name.ext', 'terms'
-      $httpBackend.flush()
-
-
   describe 'search', ->
 
     it 'should get query a path', ->
-      url = "#{Dropbox.urls.search}directory/name.ext?query=terms"
-      $httpBackend.expectGET(url, headers).respond null
-      Dropbox.search 'directory/name.ext', 'terms'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.search}"
+       content = 'path':'','query':'*.sql'
+       $httpBackend.expectPOST(url,content).respond null
+       Dropbox.search '', '*.sql'
+       $httpBackend.flush()
 
 
-  describe 'makeCopyReference', ->
+  describe 'revertFile', ->
+
+    it 'should restore a previous version', ->
+       url = "#{Dropbox.urls.restore}"
+       content = 'path':'ayc.sql','rev':'1234'
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.revertFile 'ayc.sql', '1234'
+       $httpBackend.flush()
 
 
-  describe 'copyRef', ->
+#  describe 'makeCopyReference', ->
 
 
-  describe 'pullChanges', ->
+#  describe 'copyRef', ->
 
 
-  describe 'delta', ->
+#  describe 'pullChanges', ->
+
+
+#  describe 'delta', ->
 
 
   describe 'mkdir', ->
 
     it 'should create a folder', ->
-      url = "#{Dropbox.urls.createFolder}?path=folder1&root=auto"
-      $httpBackend.expectPOST(url, undefined).respond null
+      url = "#{Dropbox.urls.createFolder}"
+      content = 'path':'folder1'
+      $httpBackend.expectPOST(url, content).respond null
       Dropbox.mkdir 'folder1'
       $httpBackend.flush()
 
@@ -213,53 +225,39 @@ describe 'Dropbox', ->
   describe 'remove', ->
 
     it 'should remove a file', ->
-      url = "#{Dropbox.urls.fileopsDelete}?path=dir%2Ffile.ext&root=auto"
-      $httpBackend.expectPOST(url, undefined).respond null
-      Dropbox.remove 'dir/file.ext'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.delete}"
+       content = 'path':'file1'
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.delete 'file1'
+       $httpBackend.flush()
 
 
-  describe 'unlink', ->
-
-    it 'should remove a file', ->
-      url = "#{Dropbox.urls.fileopsDelete}?path=dir%2Ffile.ext&root=auto"
-      $httpBackend.expectPOST(url, undefined).respond null
-      Dropbox.unlink 'dir/file.ext'
-      $httpBackend.flush()
-
-
-  describe 'delete', ->
-
-    it 'should delete a file', ->
-      url = "#{Dropbox.urls.fileopsDelete}?path=dir%2Ffile.ext&root=auto"
-      $httpBackend.expectPOST(url, undefined).respond null
-      Dropbox.delete 'dir/file.ext'
-      $httpBackend.flush()
-
-
+  
   describe 'copy', ->
 
     it 'should copy a file from one path to another', ->
-      url = "#{Dropbox.urls.fileopsCopy}?from_path=dir%2Ffile1.ext&root=auto&to_path=dir%2Ffile2.ext"
-      $httpBackend.expectPOST(url, undefined).respond null
-      Dropbox.copy 'dir/file1.ext', 'dir/file2.ext'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.copy}"
+       content = 'from_path':'file1','to_path':'file2'
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.copy 'file1', 'file2'
+       $httpBackend.flush()
 
 
   describe 'move', ->
 
     it 'should move a file', ->
-      url = "#{Dropbox.urls.fileopsMove}?from_path=dir%2Ffile1.ext&root=auto&to_path=dir%2Ffile2.ext"
-      $httpBackend.expectPOST(url, undefined).respond null
-      Dropbox.move 'dir/file1.ext', 'dir/file2.ext'
-      $httpBackend.flush()
+       url = "#{Dropbox.urls.move}"
+       content = 'from_path':'file1','to_path':'file2'
+       $httpBackend.expectPOST(url, content).respond null
+       Dropbox.move 'file1', 'file2'
+       $httpBackend.flush()
 
 
-  describe 'reset', ->
+#  describe 'reset', ->
 
 
-  describe 'setCredentials', ->
+#  describe 'setCredentials', ->
 
 
-  describe 'appHash', ->
+#  describe 'appHash', ->
 

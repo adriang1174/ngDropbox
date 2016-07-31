@@ -1,16 +1,16 @@
-# ngDropbox
+# AngularDropboxAPI
 
-ngDropbox is a [Dropbox Core API](https://www.dropbox.com/developers/core/docs) Client for AngularJS adapted from [dropbox-js](https://github.com/dropbox/dropbox-js). It should be familiar to dropbox-js users as well as idiomatic to AngularJS.
+Forked from ngDropbox is a [Dropbox Core API](https://www.dropbox.com/developers/core/docs) Client for AngularJS adapted from [dropbox-js](https://github.com/dropbox/dropbox-js). It should be familiar to dropbox-js users as well as idiomatic to AngularJS.
 
 
 ## Status
 
-This module is extracted from an AngularJS application. It mostly satisfies the needs of that project but I'm working (as of 1/4/2014) in my spare time to implement the rest of the API. If you want to use ngDropbox but something is missing or doesn't work as expected, please submit an issue or get in touch to pair program. Thanks in advance!
+This module is in development. It's pending to implement the rest of the API. If you want to use AngularDropboxAPI but something is missing or doesn't work as expected, please submit an issue. Thanks in advance!
 
 
 ## Install
 
-[Bower](http://bower.io/) is the quickest way to include ngDropbox in your project.
+[Bower](http://bower.io/) is the quickest way to include AngularDropboxAPI in your project.
 
     $ bower install git@github.com:christiansmith/ngDropbox.git --save
 
@@ -55,19 +55,16 @@ In your AngularJS app, load the module. Inform your app of the App key and Redir
 
 * [**Dropbox.accountInfo()**](https://www.dropbox.com/developers/core/docs#account-info)
 * [**Dropbox.userInfo()**](https://www.dropbox.com/developers/core/docs#account-info) (alias Dropbox.accountInfo())
-* [**Dropbox.readFile(path, params)**](https://www.dropbox.com/developers/core/docs#files-GET)
-* [**Dropbox.writeFile(path, content, params)**](https://www.dropbox.com/developers/core/docs#files_put)
+* [**Dropbox.readFile(path, params)**](https://www.dropbox.com/developers/core/docs)
+* [**Dropbox.writeFile(path, content, params)**](https://www.dropbox.com/developers/core/docs)
 * [**Dropbox.stat(path, params)**](https://www.dropbox.com/developers/core/docs#metadata)
 * [**Dropbox.metadata(path, params)**](https://www.dropbox.com/developers/core/docs#metadata) (alias Dropbox.stat(path, params))
-* [**Dropbox.readdir(path, params)**](https://www.dropbox.com/developers/core/docs#metadata)
+* [**Dropbox.list_folder(path, params)**](https://www.dropbox.com/developers/core/docs#metadata)
 * makeUrl 
 * [**Dropbox.history(path, params)**](https://www.dropbox.com/developers/core/docs#revisions)
 * [**Dropbox.revisions(path, params)**](https://www.dropbox.com/developers/core/docs#revisions) (alias Dropbox.history(path, params))
-* [**Dropbox.thumbnailUrl(path, params)**]()
-* readThumbnail
 * [**Dropbox.revertFile(path, rev)**]()
 * [**Dropbox.restore(path, rev)**]()
-* [**Dropbox.findByName(path, pattern, params)**]()
 * [**Dropbox.search(path, pattern, params)**]()
 * makeCopyReference/copyRef
 * pullChanges/delta
@@ -83,18 +80,7 @@ In your AngularJS app, load the module. Inform your app of the App key and Redir
 
 ## TODO
 
-Methods yet to be implemented (as of 8/1/2013).
-
-* signOut/signOff
-* writeFile
-* resumableUpload
-* makeUrl
-* readThumbnail
-* makeCopyReference/copyRef
-* pullChanges/delta
-
-Other
-
+* Methods for the rest of the API
 * Support redirect and other authentication methods in addition to browser popup
 * Test in multiple browsers
 * Test error cases
@@ -105,6 +91,3 @@ Other
 Installing the Karma test runner with `npm install karma -g`, then run the tests with `karma start`.
 
 
-## Copyright and License
-
-The library is Copyright (c) 2013 Christian Smith, and distributed under the MIT License.

@@ -55,8 +55,8 @@ angular.module('dropbox', [])
           // Files and metadata.
           
           getFile:             fileServer + '/2/files/download/',
-          postFile:            fileServer + '/2/files/upload',
-          metadata:            apiServer  + '/2/files/get_metadata/',
+          postFile:            fileServer + '/2/files/upload/',
+          metadata:            apiServer  + '/2/files/get_metadata',
           delta:               apiServer  + '/2/files/list_folder',   //recursive = true
           listFolder:          apiServer  + '/2/files/list_folder',   
           revisions:           apiServer  + '/2/files/list_revisions',
@@ -72,6 +72,20 @@ angular.module('dropbox', [])
         };
 
 
+        function collect() {
+          var ret = {};
+          var p = {};
+          var len = arguments.length;
+          for (var i=0; i<len; i++) {
+            for (p in arguments[i]) {
+              if (arguments[i].hasOwnProperty(p)) {
+                ret[p] = arguments[i][p];
+              }
+            }
+          }
+          return ret;
+        }
+
         /**
          * OAuth 2.0 Signatures
          */
@@ -80,6 +94,7 @@ angular.module('dropbox', [])
           if (!options.headers) { options.headers = {}; }
           options.headers['Authorization'] = 'Bearer ' + oauth.access_token;
         }
+
 
         function oauthParams(options) {
           if (!options.params) { options.params = {}; }
@@ -95,7 +110,7 @@ angular.module('dropbox', [])
           var deferred = $q.defer();
 
           oauthHeader(config);
-
+          
           function success(response) {
             console.log(config, response.data);
             deferred.resolve(response.data);
@@ -142,12 +157,13 @@ angular.module('dropbox', [])
          * HTTP POST Helper
          */
 
-        function POST(url, data, params) {
+        function POST(url, data, params,headers) {
           return request({
             method: 'POST',
             url: url,
             data: data,
-            params: params
+            params: params,
+            headers: headers
           });
         }
 
@@ -163,8 +179,8 @@ angular.module('dropbox', [])
           // Metrics for the current browser window.
           x0 = $window.screenX || $window.screenLeft
           y0 = $window.screenY || $window.screenTop
-          width = $window.outerWidth || $document.documentElement.clientWidth
-          height = $window.outerHeight || $document.documentElement.clientHeight
+          width = $window.outerWidth //|| $document.documentElement.clientWidth
+          height = $window.outerHeight //|| $document.documentElement.clientHeight
 
           // Computed popup window metrics.
           popupLeft = Math.round(x0) + (width - popupWidth) / 2
@@ -277,50 +293,39 @@ angular.module('dropbox', [])
 
 
           readFile: function (path, params) {
-            return GET(urls.getFile + path, params);
+            var data = {};
+            var headers = {};
+            headers['Dropbox-API-Arg'] = '{"path":"'+path+'"}';
+            return POST(urls.getFile, data, params,headers);
           },
 
 
           writeFile: function (path, content, params) {
+            var headers = {};
+            var pt = {"path":path};
+            var args = collect(pt,params)
+            headers['Dropbox-API-Arg'] = JSON.stringify(args);;
+            headers['Content-Type'] = 'application/octet-stream' ;
             return request({
               method: 'POST',
-              url: urls.postFile + path,
+              url: urls.postFile ,
               data: content,
-              headers: { 'Content-Type': undefined },
-              transformRequest: angular.identity,
-              params: params
+              headers: headers,
+              transformRequest: angular.identity
             });
           },
 
 
           stat: function (path, params) {
-            return GET(urls.metadata + path, params);
+            var data = collect({"path": path},params);
+            return POST(urls.metadata ,data );
           },
 
-          listfolder: function (path, params) {
-            return GET(urls.listFolder + path, params);
+          listFolder: function (path, params) {
+             var data = collect({"path": path},params); 
+            return POST(urls.listFolder , data);
           },
           
-          /*
-          readdir: function (path, params) {
-            var deferred = $q.defer();
-
-            function success(stat) {
-              var entries = stat.contents.map(function (entry) {
-                return entry.path;
-              });
-
-              console.log('readdir of ' + path, entries);
-              deferred.resolve(entries);
-            }
-
-            function failure(fault) { deferred.reject(fault); }
-
-            this.stat(path, params).then(success, failure);
-            return deferred.promise;
-          },
-*/
-
           metadata: function (path, params) {
             return this.stat(path, params);
           },
@@ -330,7 +335,8 @@ angular.module('dropbox', [])
 
 
           history: function (path, params) {
-            return GET(urls.revisions + path, params);
+            var data = collect({"path": path},params);
+            return POST(urls.revisions, data);
           },
 
           revisions: function (path, params) {
@@ -341,7 +347,7 @@ angular.module('dropbox', [])
           // readThumbnail
 
           revertFile: function (path, rev) {
-            return POST(urls.restore + path, null, { rev: rev });
+            return POST(urls.restore , { "path":path, "rev": rev });
           },
 
 
@@ -350,16 +356,9 @@ angular.module('dropbox', [])
           },
 
 
-          findByName: function (path, pattern, params) {
-            var params = params || {};
-            params.query = pattern;
-
-            return GET(urls.search + path, params);
-          },
-
-
           search: function (path, pattern, params) {
-            return this.findByName(path, pattern, params);
+            var data = collect({"path": path,"query":pattern},params);
+            return POST(urls.search, data);
           },
 
 
@@ -376,34 +375,17 @@ angular.module('dropbox', [])
 
 
           mkdir: function (path) {
-            return POST(urls.createFolder, null, {
-              root: 'auto',
-              path: path
-            });
-          },
-
-
-          remove: function (path) {
-            return POST(urls.delete, null, {
-              root: 'auto',
-              path: path
-            });
-          },
-
-
-          unlink: function (path) {
-            return this.remove(path);
+            return POST(urls.createFolder, {"path": path});
           },
 
 
           delete: function (path) {
-            return this.remove(path);
+            return POST(urls.delete, { "path": path });
           },
 
 
           copy: function (from, to) {
-            return POST(urls.copy, null, {
-              root: 'auto',
+            return POST(urls.copy, {
               to_path: to,
               from_path: from
             });
@@ -411,8 +393,7 @@ angular.module('dropbox', [])
 
 
           move: function (from, to) {
-            return POST(urls.move, null, {
-              root: 'auto',
+            return POST(urls.move, {
               to_path: to,
               from_path: from
             });
