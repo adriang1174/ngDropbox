@@ -12,13 +12,13 @@ This module is in development. It's pending to implement the rest of the API. If
 
 [Bower](http://bower.io/) is the quickest way to include AngularDropboxAPI in your project.
 
-    $ bower install git@github.com:christiansmith/ngDropbox.git --save
+    $ bower install git@github.com:adriang1174/ngDropbox.git --save
 
     <script src="bower_components/ngDropbox/dropbox.js"></script>
 
 If you don't use Bower, just download `dropbox.js` into your scripts directory.
 
-    $ curl -O https://raw.github.com/christiansmith/ngDropbox/master/dropbox.js
+    $ curl -O https://raw.github.com/adriang1174/ngDropbox/dropbox.js
 
     <script src="your/js/path/dropbox.js"></script>
 
